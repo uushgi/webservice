@@ -1,22 +1,97 @@
 <!DOCTYPE html>
-<html>
+<html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <title>index</title>
-    <link rel="stylesheet" href="/static/css/style.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dushes</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 </head>
 <body>
     <header>
-        <h1>mainpage</h1>
+        <h1>Dushes</h1>
+        <a href="#" class="login-btn">Логин</a>
     </header>
-    
-    <main>
-        <p>whatever we do</p>
-    </main>
-    
-    <footer>
-        <p>footer</p>
-    </footer>
+
+    <div class="container">
+        <div class="calendar-wrapper">
+            <div class="calendar">
+                <div class="month">
+                    <div class="prev">&#10094;</div>
+                    <div>
+                        <h1>Июнь</h1>
+                        <p>2025</p>
+                    </div>
+                    <div class="next">&#10095;</div>
+                </div>
+                
+                <div class="weekdays">
+                    <div>Вс</div>
+                    <div>Пн</div>
+                    <div>Вт</div>
+                    <div>Ср</div>
+                    <div>Чт</div>
+                    <div>Пт</div>
+                    <div>Сб</div>
+                </div>
+                
+                <div class="days">
+                    <!-- JavaScript -->
+                </div>
+                
+                <div class="time-slots">
+                    <h3>Выберите время бронирования:</h3>
+                    <div class="time-grid">
+                        <div class="time-slot">10:00 - 11:00</div>
+                        <div class="time-slot">11:00 - 12:00</div>
+                        <div class="time-slot">12:00 - 13:00</div>
+                        <div class="time-slot">13:00 - 14:00</div>
+                        <div class="time-slot">14:00 - 15:00</div>
+                        <div class="time-slot booked">15:00 - 16:00</div>
+                        <div class="time-slot">16:00 - 17:00</div>
+                        <div class="time-slot">17:00 - 18:00</div>
+                        <div class="time-slot">18:00 - 19:00</div>
+                        <div class="time-slot">19:00 - 20:00</div>
+                        <div class="time-slot">20:00 - 21:00</div>
+                        <div class="time-slot">21:00 - 22:00</div>
+                    </div>
+                    <div class="booking-actions">
+                        <button class="booking-btn cancel-btn">Отмена</button>
+                        <button class="booking-btn confirm-btn">Забронировать</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="news-sidebar">
+            <h2 class="news-title">Новости</h2>
+            
+            <div class="news-item">
+                <div class="news-date">дата</div>
+                <h3>заголовок</h3>
+                <p>текст</p>
+            </div>
+            
+            <div class="news-item">
+                <div class="news-date">дата</div>
+                <h3>заголовок</h3>
+                <p>текст</p>
+            </div>
+            
+            <div class="news-item">
+                <div class="news-date">дата</div>
+                <h3>заголовок</h3>
+                <p>текст</p>
+            </div>
+            
+            <div class="news-item">
+                <div class="news-date">дата</div>
+                <h3>заголовок</h3>
+                <p>текст</p>
+            </div>
+        </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/calendar.js') }}"></script>
 </body>
 </html>
 
