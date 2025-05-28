@@ -1,7 +1,7 @@
 from sqlite3 import *
 
 
-connection = connect('dushess.db')
+connection = connect('db/dushess.db')
 cursor = connection.cursor()
 
 cursor.execute('''
