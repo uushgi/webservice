@@ -4,6 +4,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const currentYear = date.getFullYear();
     let selectedMonth = currentMonth;
     let selectedYear = currentYear;
+    let selectedVenue = null;
     
     const monthNames = ["Январь", "Февраль", "Март", "Апрель", "Май", "Июнь", 
                       "Июль", "Август", "Сентябрь", "Октябрь", "Ноябрь", "Декабрь"];
@@ -13,6 +14,17 @@ document.addEventListener('DOMContentLoaded', function() {
     const monthTitle = document.querySelector('.month h1');
     const yearTitle = document.querySelector('.month p');
     const daysContainer = document.querySelector('.days');
+    const venueTabs = document.querySelectorAll('.venue-tab');
+    
+    venueTabs.forEach(tab => {
+        tab.addEventListener('click', function() {
+            venueTabs.forEach(t => t.classList.remove('active'));
+            this.classList.add('active');
+            selectedVenue = this.textContent;
+            
+            renderCalendar(selectedMonth, selectedYear);
+        });
+    });
     
     function renderCalendar(month, year) {
         const firstDay = new Date(year, month, 1).getDay();
@@ -38,7 +50,7 @@ document.addEventListener('DOMContentLoaded', function() {
             
             let dayClass = isToday ? 'today' : '';
             
-            daysHtml += `<div class="${dayClass}">${i}</div>`;
+            daysHtml += `<div class="${dayClass}" data-venue="${selectedVenue}" data-date="${year}-${month + 1}-${i}">${i}</div>`;
         }
         
         // следующий
@@ -79,11 +91,17 @@ document.addEventListener('DOMContentLoaded', function() {
         
         days.forEach(day => {
             day.addEventListener('click', function() {
-                days.forEach(d => d.classList.remove('selected'));
+                if (!selectedVenue) {
+                    alert('Пожалуйста, сначала выберите площадку');
+                    return;
+                }
                 
+                days.forEach(d => d.classList.remove('selected'));
                 this.classList.add('selected');
                 
                 timeSlots.style.display = 'block';
+                timeSlots.setAttribute('data-venue', selectedVenue);
+                timeSlots.setAttribute('data-date', this.getAttribute('data-date'));
             });
         });
         
@@ -91,7 +109,6 @@ document.addEventListener('DOMContentLoaded', function() {
         timeSlotElements.forEach(slot => {
             slot.addEventListener('click', function() {
                 timeSlotElements.forEach(s => s.classList.remove('selected'));
-                
                 this.classList.add('selected');
             });
         });
@@ -99,7 +116,6 @@ document.addEventListener('DOMContentLoaded', function() {
         cancelBtn.addEventListener('click', function() {
             days.forEach(d => d.classList.remove('selected'));
             timeSlotElements.forEach(s => s.classList.remove('selected'));
-            
             timeSlots.style.display = 'none';
         });
     }
