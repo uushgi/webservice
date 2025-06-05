@@ -3,17 +3,50 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dushes</title>
+    <title>fefudance</title>
     <link rel="stylesheet" href="/static/css/style.css">
 </head>
-<body>
     <header>
-        <h1>Dushes</h1>
-        <a href="#" class="login-btn">Логин</a>
+        <div class="logo">fefudance</div>
+        <nav class="nav">
+            <div class="dropdown">
+                <button class="dropbtn">Площадки <span>&#9660;</span></button>
+                <div class="dropdown-content">
+                    <a href="#">Дюшес</a>
+                    <a href="#">Стикер</a>
+                    <a href="#">Euphoria</a>
+                    <a href="#">InSpo</a>
+                </div>
+            </div>
+            <a href="#">Контакты</a>
+        </nav>
+        <div class="lang-login">
+            {% if auth_status %}
+                <div class="user-info">
+                    <p>{{ user_data.login }}</p>
+                    <a href="{{ url_for('logout') }}" class="login-btn">Выйти</a>
+                </div>
+            {% else %}
+                <a href="https://oauth.yandex.ru/authorize?response_type=code&client_id={{ CLIENT_ID }}" class="login-btn">
+                    Логин
+                </a>
+            {% endif %}
+
+            {% if auth_success and not auth_status %}
+                <div class="alert alert-success">Вы успешно вошли!</div>
+            {% endif %}
+        </div>
     </header>
 
+<body>
     <div class="container">
         <div class="calendar-wrapper">
+            <div class="venue-tabs">
+                <button class="venue-tab">Дюшес</button>
+                <button class="venue-tab">Sticker</button>
+                <button class="venue-tab">Euphoria</button>
+                <button class="venue-tab">InSpo</button>
+            </div>
             <div class="calendar">
                 <div class="month">
                     <div class="prev">&#10094;</div>
@@ -25,13 +58,13 @@
                 </div>
                 
                 <div class="weekdays">
-                    <div>Вс</div>
-                    <div>Пн</div>
-                    <div>Вт</div>
-                    <div>Ср</div>
-                    <div>Чт</div>
-                    <div>Пт</div>
-                    <div>Сб</div>
+                    <div>пн</div>
+                    <div>вт</div>
+                    <div>вт</div>
+                    <div>ср</div>
+                    <div>чт</div>
+                    <div>пт</div>
+                    <div>сб</div>
                 </div>
                 
                 <div class="days">
@@ -46,7 +79,7 @@
                         <div class="time-slot">12:00 - 13:00</div>
                         <div class="time-slot">13:00 - 14:00</div>
                         <div class="time-slot">14:00 - 15:00</div>
-                        <div class="time-slot booked">15:00 - 16:00</div>
+                        <div class="time-slot">15:00 - 16:00</div>
                         <div class="time-slot">16:00 - 17:00</div>
                         <div class="time-slot">17:00 - 18:00</div>
                         <div class="time-slot">18:00 - 19:00</div>
@@ -61,40 +94,131 @@
                 </div>
             </div>
         </div>
-        
-        <div class="news-sidebar">
-            <h2 class="news-title">Новости</h2>
-            
-            <div class="news-item">
-                <div class="news-date">дата</div>
-                <h3>заголовок</h3>
-                <p>текст</p>
+
+        <div class="right-column">
+            <div class="news-composite-wrapper">
+                <div class="fefurry-container">
+                    <img src="/static/images/form-fox-desctop4.png" alt="фурри" class="fefurry-image">
+                </div>
+                <div class="news-sidebar">
+                    <h2 class="news-title">Новости</h2>
+                    <div class="news-item">
+                        <div class="news-date">6.6.2025</div>
+                        <h3>Обновление сервиса</h3>
+                        <p>шутник покойник, умер во вторник, а в среду встал да корову украл</p>
+                    </div>
+                    <div class="news-item">
+                        <div class="news-date">5.6.2025</div>
+                        <h3>Технические работы</h3>
+                        <p>шутник покойник, умер во вторник, а в среду встал да корову украл</p>
+                    </div>
+                    <div class="news-item">
+                        <div class="news-date">4.6.2025</div>
+                        <h3>Лайки площадок</h3>
+                        <p>шутник покойник, умер во вторник, а в среду встал да корову украл</p>
+                    </div>
+                </div>
             </div>
-            
-            <div class="news-item">
-                <div class="news-date">дата</div>
-                <h3>заголовок</h3>
-                <p>текст</p>
+
+            <div class="venue-likes">
+                <h2 class="news-title">Популярные площадки</h2>
+                <div class="venue-grid">
+                    <div class="venue-card">
+                        <div class="venue-photo">
+                            <img src="/static/images/venue1.png" alt="Дюшес" style="width: 100%; height: 100%; object-fit: cover;">
+                        </div>
+                        <div class="venue-info">
+                            <div class="venue-name">Дюшес</div>
+                            <div class="venue-likes-count">42</div>
+                        </div>
+                    </div>
+                    <div class="venue-card">
+                        <div class="venue-photo">
+                            <img src="/static/images/venue2.png" alt="Sticker" style="width: 100%; height: 100%; object-fit: cover;">
+                        </div>
+                        <div class="venue-info">
+                            <div class="venue-name">Sticker</div>
+                            <div class="venue-likes-count">38</div>
+                        </div>
+                    </div>
+                    <div class="venue-card">
+                        <div class="venue-photo">
+                            <img src="/static/images/venue3.png" alt="Euphoria" style="width: 100%; height: 100%; object-fit: cover;">
+                        </div>
+                        <div class="venue-info">
+                            <div class="venue-name">Euphoria</div>
+                            <div class="venue-likes-count">35</div>
+                        </div>
+                    </div>
+                    <div class="venue-card">
+                        <div class="venue-photo">
+                            <img src="/static/images/venue4.png" alt="InSpo" style="width: 100%; height: 100%; object-fit: cover;">
+                        </div>
+                        <div class="venue-info">
+                            <div class="venue-name">InSpo</div>
+                            <div class="venue-likes-count">29</div>
+                        </div>
+                    </div>
+                </div>
             </div>
-            
-            <div class="news-item">
-                <div class="news-date">дата</div>
-                <h3>заголовок</h3>
-                <p>текст</p>
+        </div>
+
+        <div class="faq-section">
+            <h2 class="faq-title">Часто задаваемые вопросы</h2>
+            <div class="faq-item">
+                <input type="checkbox" id="faq1" class="faq-checkbox">
+                <label for="faq1" class="faq-question">
+                    Как забронировать площадку?
+                </label>
+                <div class="faq-answer">
+                    Выберите площадку, дату и удобное время в календаре. Нажмите "Забронировать" для подтверждения.
+                </div>
             </div>
-            
-            <div class="news-item">
-                <div class="news-date">дата</div>
-                <h3>заголовок</h3>
-                <p>текст</p>
+            <div class="faq-item">
+                <input type="checkbox" id="faq2" class="faq-checkbox">
+                <label for="faq2" class="faq-question">
+                    Можно ли отменить бронирование?
+                </label>
+                <div class="faq-answer">
+                    Да, вы можете отменить бронирование не менее чем за 24 часа до назначенного времени.
+                </div>
+            </div>
+            <div class="faq-item">
+                <input type="checkbox" id="faq3" class="faq-checkbox">
+                <label for="faq3" class="faq-question">
+                    Какие правила действуют на площадках?
+                </label>
+                <div class="faq-answer">
+                    распишем
+                </div>
+            </div>
+            <div class="faq-item">
+                <input type="checkbox" id="faq4" class="faq-checkbox">
+                <label for="faq4" class="faq-question">
+                    placeholder
+                </label>
+                <div class="faq-answer">
+                    распишем
+                </div>
             </div>
         </div>
     </div>
 
+    <footer class="footer">
+        <div class="footer-content">
+            <div class="footer-logo">fefudance</div>
+            <div class="footer-links">
+                <a href="#">VK</a>
+                <a href="#">VK</a>
+                <a href="#">VK</a>
+                <a href="#">VK</a>
+                <a href="#">Telegram???</a>
+            </div>
+            <div class="footer-copyright">Проект &copy; 2025</div>
+        </div>
+    </footer>
+
     <script src="static/js/calendar.js"></script>
 </body>
-    <footer>
-        <p>footer</p>
-    </footer>
 </html>
 
