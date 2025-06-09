@@ -1,72 +1,24 @@
 document.addEventListener('DOMContentLoaded', function() {
-    const date = new Date();
-    const currentMonth = date.getMonth();
-    const currentYear = date.getFullYear();
+    let date = new Date();
+    let currentMonth = date.getMonth();
+    let currentYear = date.getFullYear();
     let selectedMonth = currentMonth;
     let selectedYear = currentYear;
     let selectedVenue = null;
+    let notificationTimeout = null;
+    let selectedDate = null;
     
     const monthNames = ["Январь", "Февраль", "Март", "Апрель", "Май", "Июнь", 
                       "Июль", "Август", "Сентябрь", "Октябрь", "Ноябрь", "Декабрь"];
     
-    const prevBtn = document.querySelector('.prev');
-    const nextBtn = document.querySelector('.next');
-    const monthTitle = document.querySelector('.month h1');
-    const yearTitle = document.querySelector('.month p');
-    const daysContainer = document.querySelector('.days');
-    const venueTabs = document.querySelectorAll('.venue-tab');
+    let monthTitle = document.querySelector('.month h1');
+    let yearTitle = document.querySelector('.month p');
+    let daysContainer = document.querySelector('.days');
+    let venueTabs = document.querySelectorAll('.venue-tab');
+    let bookingForm = document.querySelector('form[name="booking"]');
+    let timeSlots = document.querySelector('.time-slots');
     
-    venueTabs.forEach(tab => {
-        tab.addEventListener('click', function() {
-            venueTabs.forEach(t => t.classList.remove('active'));
-            this.classList.add('active');
-            selectedVenue = this.textContent;
-            
-            renderCalendar(selectedMonth, selectedYear);
-        });
-    });
-    
-    function renderCalendar(month, year) {
-        const firstDay = new Date(year, month, 1).getDay();
-        const daysInMonth = new Date(year, month + 1, 0).getDate();
-        const daysInPrevMonth = new Date(year, month, 0).getDate();
-        
-        monthTitle.textContent = monthNames[month];
-        yearTitle.textContent = year;
-        
-        let daysHtml = '';
-        
-        // предыдущий месяц
-        for (let i = firstDay === 0 ? 6 : firstDay - 1; i > 0; i--) {
-            daysHtml += `<div class="prev-date">${daysInPrevMonth - i + 1}</div>`;
-        }
-        
-        // текущий месяц
-        const today = new Date();
-        for (let i = 1; i <= daysInMonth; i++) {
-            const isToday = i === today.getDate() && 
-                          month === today.getMonth() && 
-                          year === today.getFullYear();
-            
-            let dayClass = isToday ? 'today' : '';
-            
-            daysHtml += `<div class="${dayClass}" data-venue="${selectedVenue}" data-date="${year}-${month + 1}-${i}">${i}</div>`;
-        }
-        
-        // следующий
-        const totalCells = firstDay === 0 ? 42 : 35; // 6 или 5 строк
-        const remainingCells = totalCells - (firstDay === 0 ? 6 : firstDay - 1) - daysInMonth;
-        
-        for (let i = 1; i <= remainingCells; i++) {
-            daysHtml += `<div class="next-date">${i}</div>`;
-        }
-        
-        daysContainer.innerHTML = daysHtml;
-        
-        addDayEventListeners();
-    }
-    
-    prevBtn.addEventListener('click', function() {
+    document.querySelector('.prev').addEventListener('click', () => {
         selectedMonth--;
         if (selectedMonth < 0) {
             selectedMonth = 11;
@@ -75,7 +27,7 @@ document.addEventListener('DOMContentLoaded', function() {
         renderCalendar(selectedMonth, selectedYear);
     });
     
-    nextBtn.addEventListener('click', function() {
+    document.querySelector('.next').addEventListener('click', () => {
         selectedMonth++;
         if (selectedMonth > 11) {
             selectedMonth = 0;
@@ -84,39 +36,192 @@ document.addEventListener('DOMContentLoaded', function() {
         renderCalendar(selectedMonth, selectedYear);
     });
     
+    venueTabs.forEach(tab => {
+        tab.addEventListener('click', function() {
+            venueTabs.forEach(t => t.classList.remove('active'));
+            this.classList.add('active');
+            selectedVenue = this.textContent;
+            
+            if (selectedDate) {
+                updateBookedSlots(selectedVenue, selectedDate);
+            }
+            
+            renderCalendar(selectedMonth, selectedYear);
+        });
+    });
+    
+    function renderCalendar(month, year) {
+        let firstDay = new Date(year, month, 1).getDay();
+        let daysInMonth = new Date(year, month + 1, 0).getDate();
+        let daysInPrevMonth = new Date(year, month, 0).getDate();
+        
+        monthTitle.textContent = monthNames[month];
+        yearTitle.textContent = year;
+        
+        let daysHtml = '';
+        
+        // месяцы до
+        for (let i = firstDay === 0 ? 6 : firstDay - 1; i > 0; i--) {
+            daysHtml += `<div class="prev-date">${daysInPrevMonth - i + 1}</div>`;
+        }
+        
+        // актуальные
+        let today = new Date();
+        for (let i = 1; i <= daysInMonth; i++) {
+            let isToday = i === today.getDate() && 
+                         month === today.getMonth() && 
+                         year === today.getFullYear();
+            
+            let currentDate = `${year}-${String(month + 1).padStart(2, '0')}-${String(i).padStart(2, '0')}`;
+            // этот ужас необходим для того, чтобы в бд в нужном формате дату передавать, с нулями
+            // может временное решение, может нет
+            let isSelected = selectedDate === currentDate;
+            
+            daysHtml += `<div class="${isToday ? 'today' : ''} ${isSelected ? 'selected' : ''}" 
+                             data-venue="${selectedVenue}" 
+                             data-date="${currentDate}">${i}</div>`;
+        }
+        
+        let totalCells = firstDay === 0 ? 42 : 35;
+        let remainingCells = totalCells - (firstDay === 0 ? 6 : firstDay - 1) - daysInMonth;
+        
+        for (let i = 1; i <= remainingCells; i++) {
+            daysHtml += `<div class="next-date">${i}</div>`;
+        }
+        
+        daysContainer.innerHTML = daysHtml;
+        addDayEventListeners();
+    }
+    
+
+    async function updateBookedSlots(venue, date) {
+        try {
+            let response = await fetch(`/get-booked-slots?venue=${encodeURIComponent(venue)}&date=${encodeURIComponent(date)}`);
+            let data = await response.json();
+            
+            if (data.error) {
+                console.error('Error fetching booked slots:', data.error);
+                return;
+            }
+            
+            document.querySelectorAll('.time-slot').forEach(slot => {
+                let time = slot.textContent.split(' - ')[0];
+                if (data.booked_slots.includes(time)) {
+                    slot.classList.add('booked');
+                    slot.classList.remove('selected');
+                } else {
+                    slot.classList.remove('booked');
+                }
+            });
+        } catch (error) {
+            console.error('Error:', error);
+        }
+    }
+    
+
+    function showNotification(message) {
+        const existingNotification = document.querySelector('.alert');
+        if (existingNotification) {
+            existingNotification.remove();
+        }
+
+        const notification = document.createElement('div');
+        notification.className = 'alert alert-warning booking-notification';
+        notification.textContent = message;
+        
+        const closeBtn = document.createElement('button');
+        closeBtn.className = 'close-btn';
+        closeBtn.innerHTML = '&times;';
+        closeBtn.onclick = () => notification.remove();
+        
+        notification.appendChild(closeBtn);
+        document.querySelector('.notifications').appendChild(notification);
+
+        if (notificationTimeout) {
+            clearTimeout(notificationTimeout);
+        }
+        notificationTimeout = setTimeout(() => {
+            notification.remove();
+        }, 3000);
+    }
+    
     function addDayEventListeners() {
-        const days = document.querySelectorAll('.days div:not(.prev-date):not(.next-date)');
-        const timeSlots = document.querySelector('.time-slots');
-        const cancelBtn = document.querySelector('.cancel-btn');
+        let days = document.querySelectorAll('.days div:not(.prev-date):not(.next-date)');
+        let cancelBtn = document.querySelector('.cancel-btn');
         
         days.forEach(day => {
             day.addEventListener('click', function() {
                 if (!selectedVenue) {
-                    alert('Пожалуйста, сначала выберите площадку');
+                    showNotification('Пожалуйста, сначала выберите площадку');
                     return;
                 }
                 
                 days.forEach(d => d.classList.remove('selected'));
                 this.classList.add('selected');
                 
+                selectedDate = this.getAttribute('data-date');
                 timeSlots.style.display = 'block';
                 timeSlots.setAttribute('data-venue', selectedVenue);
-                timeSlots.setAttribute('data-date', this.getAttribute('data-date'));
+                timeSlots.setAttribute('data-date', selectedDate);
+                
+                updateBookedSlots(selectedVenue, selectedDate);
             });
         });
         
-        const timeSlotElements = document.querySelectorAll('.time-slot:not(.booked)');
-        timeSlotElements.forEach(slot => {
+        document.querySelectorAll('.time-slot').forEach(slot => {
             slot.addEventListener('click', function() {
-                timeSlotElements.forEach(s => s.classList.remove('selected'));
+                if (this.classList.contains('booked')) {
+                    showNotification('Это время уже забронировано');
+                    return;
+                }
+                document.querySelectorAll('.time-slot').forEach(s => s.classList.remove('selected'));
                 this.classList.add('selected');
             });
         });
         
-        cancelBtn.addEventListener('click', function() {
+        cancelBtn.addEventListener('click', () => {
             days.forEach(d => d.classList.remove('selected'));
-            timeSlotElements.forEach(s => s.classList.remove('selected'));
+            document.querySelectorAll('.time-slot').forEach(s => s.classList.remove('selected'));
             timeSlots.style.display = 'none';
+            selectedDate = null;
+        });
+    }
+    
+
+    if (bookingForm) {
+        bookingForm.addEventListener('submit', function(e) {
+            let selectedDay = document.querySelector('.days div.selected');
+            let selectedTimeSlot = document.querySelector('.time-slot.selected');
+            
+            if (!selectedDay || !selectedTimeSlot) {
+                e.preventDefault();
+                showNotification('Пожалуйста, выберите дату и время');
+                return;
+            }
+            
+            if (selectedTimeSlot.classList.contains('booked')) {
+                e.preventDefault();
+                showNotification('Это время уже забронировано');
+                return;
+            }
+            
+            this.appendChild(Object.assign(document.createElement('input'), {
+                type: 'hidden',
+                name: 'venue',
+                value: selectedVenue
+            }));
+            
+            this.appendChild(Object.assign(document.createElement('input'), {
+                type: 'hidden',
+                name: 'date',
+                value: selectedDay.getAttribute('data-date')
+            }));
+            
+            this.appendChild(Object.assign(document.createElement('input'), {
+                type: 'hidden',
+                name: 'time',
+                value: selectedTimeSlot.textContent.split(' - ')[0]
+            }));
         });
     }
     

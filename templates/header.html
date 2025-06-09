@@ -1,0 +1,30 @@
+<header>
+    <div class="logo">fefudance</div>
+    <nav class="nav">
+        <div class="dropdown">
+            <button class="dropbtn">Площадки <span>&#9660;</span></button>
+            <div class="dropdown-content">
+                {% for venue in venues %}
+                <a href="#">{{ venue.name }}</a>
+                {% endfor %}
+            </div>
+        </div>
+        <a href="#">Контакты</a>
+    </nav>
+    <div class="lang-login">
+        {% if auth_status %}
+            <div class="user-info">
+                <p>{{ user_data.login }}</p>
+                <a href="{{ url_for('logout') }}" class="login-btn">Выйти</a>
+            </div>
+        {% else %}
+            <a href="https://oauth.yandex.ru/authorize?response_type=code&client_id={{ CLIENT_ID }}" class="login-btn">
+                Логин
+            </a>
+        {% endif %}
+
+        {% if auth_success and not auth_status %}
+            <div class="alert alert-success">Вы успешно вошли!</div>
+        {% endif %}
+    </div>
+</header> 

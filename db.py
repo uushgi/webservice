@@ -205,10 +205,10 @@ def Create_TimeBook_db(tableName):
         if Take_out_column_db(tableName, 'day')[0]:
             None
     except:
-        current_date = datetime.strptime('2024_01_01', '%Y_%m_%d')
+        current_date = datetime.strptime('2025-01-01', '%Y-%m-%d')
 
         for i in range(365):
-            formatted_date = current_date.strftime('%Y_%m_%d')
+            formatted_date = current_date.strftime('%Y-%m-%d')
             Add_element_db(tableName, 'day', day=formatted_date)
             current_date += timedelta(days=1)
 

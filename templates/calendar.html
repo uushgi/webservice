@@ -1,0 +1,55 @@
+<div class="calendar-wrapper">
+    <div class="venue-tabs">
+        {% for venue in venues %}
+        <button class="venue-tab">{{ venue.name }}</button>
+        {% endfor %}
+    </div>
+    <div class="calendar">
+        <div class="month">
+            <div class="prev">&#10094;</div>
+            <div>
+                <h1>Июнь</h1>
+                <p>2025</p>
+            </div>
+            <div class="next">&#10095;</div>
+        </div>
+
+        <div class="weekdays">
+            <div>пн</div>
+            <div>вт</div>
+            <div>ср</div>
+            <div>чт</div>
+            <div>пт</div>
+            <div>сб</div>
+            <div>вс</div>
+        </div>
+
+        <div class="days">
+            <!-- JavaScript -->
+        </div>
+
+        <div class="time-slots">
+            <form method="post" name="booking">
+            <h3>Выберите время бронирования:</h3>
+            <div class="time-grid">
+                <div class="time-slot">10:00 - 11:00</div>
+                <div class="time-slot">11:00 - 12:00</div>
+                <div class="time-slot">12:00 - 13:00</div>
+                <div class="time-slot">13:00 - 14:00</div>
+                <div class="time-slot">14:00 - 15:00</div>
+                <div class="time-slot">15:00 - 16:00</div>
+                <div class="time-slot">16:00 - 17:00</div>
+                <div class="time-slot">17:00 - 18:00</div>
+                <div class="time-slot">18:00 - 19:00</div>
+                <div class="time-slot">19:00 - 20:00</div>
+                <div class="time-slot">20:00 - 21:00</div>
+                <div class="time-slot">21:00 - 22:00</div>
+            </div>
+            <div class="booking-actions">
+                <button type="button" class="booking-btn cancel-btn">Отмена</button>
+                <button class="booking-btn confirm-btn" name="calendar_book">Забронировать</button>
+            </div>
+            </form>
+        </div>
+    </div>
+</div> 
