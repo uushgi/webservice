@@ -6,6 +6,7 @@ from Value import *
 dateDB = '3'
 
 
+
 app = Flask(__name__)
 app.secret_key = '1221212121'  # Важно: замените на реальный секретный ключ!
 
@@ -133,4 +134,13 @@ def logout():
 
 
 if __name__ == '__main__':
+    if ('2024_01_01' in Take_out_column_db('DushesTime', 'day')) == False:
+        Create_TimeBook_db('DushesTime')
+    if ('2024_01_01' in Take_out_column_db('StickerTime', 'day')) == False:
+        Create_TimeBook_db('StickerTime')
+    if ('2024_01_01' in Take_out_column_db('InSpoTime', 'day')) == False:
+        Create_TimeBook_db('InSpoTime')
+    if ('2024_01_01' in Take_out_column_db('EuphoriaTime', 'day')) == False:
+        Create_TimeBook_db('EuphoriaTime')
+        
     app.run(debug=True)
