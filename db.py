@@ -201,11 +201,49 @@ def Take_out_column_db(tableName, columnType):
 
 
 def Create_TimeBook_db(tableName):
-    current_date = datetime.strptime('2024_01_01', '%Y_%m_%d')
+    try:
+        if Take_out_column_db(tableName, 'day')[0]:
+            None
+    except:
+        current_date = datetime.strptime('2024_01_01', '%Y_%m_%d')
 
-    for i in range(365):
-        formatted_date = current_date.strftime('%Y_%m_%d')
-        Add_element_db(tableName, 'day', day=formatted_date)
-        current_date += timedelta(days=1)
+        for i in range(365):
+            formatted_date = current_date.strftime('%Y_%m_%d')
+            Add_element_db(tableName, 'day', day=formatted_date)
+            current_date += timedelta(days=1)
 
-#print(Take_out_element_db('TimeBook', '*', 'time_13_00', 'max lox'))
+
+def Get_user_bookings(tableName, user_login):
+    connection = connect('db/dushess.db')
+    cursor = connection.cursor()
+
+    # Получаем все дни, где у пользователя есть бронирования
+    cursor.execute(f'''
+    SELECT day, 
+           time_10_00, time_10_30, time_11_00, time_11_30,
+           time_12_00, time_12_30, time_13_00, time_13_30,
+           time_14_00, time_14_30, time_15_00, time_15_30,
+           time_16_00, time_16_30, time_17_00, time_17_30,
+           time_18_00, time_18_30, time_19_00, time_19_30,
+           time_20_00, time_20_30, time_21_00, time_21_30,
+           time_22_00
+    FROM {tableName}
+    WHERE time_10_00 = ? OR time_10_30 = ? OR time_11_00 = ? OR time_11_30 = ? OR
+          time_12_00 = ? OR time_12_30 = ? OR time_13_00 = ? OR time_13_30 = ? OR
+          time_14_00 = ? OR time_14_30 = ? OR time_15_00 = ? OR time_15_30 = ? OR
+          time_16_00 = ? OR time_16_30 = ? OR time_17_00 = ? OR time_17_30 = ? OR
+          time_18_00 = ? OR time_18_30 = ? OR time_19_00 = ? OR time_19_30 = ? OR
+          time_20_00 = ? OR time_20_30 = ? OR time_21_00 = ? OR time_21_30 = ? OR
+          time_22_00 = ?
+    ''', (user_login,) * 25)
+
+    bookings = []
+    for row in cursor.fetchall():
+        day = row[0]
+        for i in range(1, 25):
+            if row[i] == user_login:
+                time_slot = f"time_{10 + (i - 1) // 2}:{(i - 1) % 2 * 30:02d}"
+                bookings.append({'day': day, 'time': time_slot, 'room': tableName})
+
+    connection.close()
+    return bookings
