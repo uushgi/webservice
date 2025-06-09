@@ -1,0 +1,15 @@
+<div class="news-composite-wrapper">
+    <div class="fefurry-container">
+        <img src="/static/images/form-fox-desctop4.png" alt="фурри" class="fefurry-image">
+    </div>
+    <div class="news-sidebar">
+        <h2 class="news-title">Новости</h2>
+        {% for item in news %}
+        <div class="news-item">
+            <div class="news-date">{{ item.date }}</div>
+            <h3>{{ item.title }}</h3>
+            <p>{{ item.text }}</p>
+        </div>
+        {% endfor %}
+    </div>
+</div> 

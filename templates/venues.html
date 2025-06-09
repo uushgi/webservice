@@ -1,0 +1,16 @@
+<div class="venue-likes">
+    <h2 class="news-title">Популярные площадки</h2>
+    <div class="venue-grid">
+        {% for venue in venues %}
+        <div class="venue-card">
+            <div class="venue-photo">
+                <img src="/static/images/{{ venue.image }}" alt="{{ venue.name }}" style="width: 100%; height: 100%; object-fit: cover;">
+            </div>
+            <div class="venue-info">
+                <div class="venue-name">{{ venue.name }}</div>
+                <div class="venue-likes-count">{{ venue.likes }}</div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div> 
