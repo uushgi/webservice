@@ -1,14 +1,13 @@
 from flask import *
 from db import *
 import requests
-from Value import *
 
 dateDB = '3'
 
 
 
 app = Flask(__name__)
-app.secret_key = '1221212121'  # Важно: замените на реальный секретный ключ!
+app.secret_key = '1221212121'
 
 CLIENT_ID = '4004acc77b2b4dbba0c4fa8208583ac6'
 CLIENT_SECRET = '2abc3be40fec4ccbba24572a9235260e'
@@ -18,11 +17,9 @@ CLIENT_SECRET = '2abc3be40fec4ccbba24572a9235260e'
 def index():
 
 
-    # Проверяем статус авторизации
     auth_status = session.get('authenticated', False)
     user_data = session.get('user_data', None)
 
-    # Проверяем параметр успешной авторизации из URL
     auth_success = request.args.get('auth_success', False)
 
     if True == 0:
@@ -47,12 +44,6 @@ def index():
                 if startTime == endTime:
                     flag = True
 
-            return render_template("index.html")
-
-
-    elif 'fff' in request.form:
-        print(22)
-        return redirect(url_for('about'))
 
     return render_template('index.html',
                            auth_status=auth_status,
@@ -62,27 +53,26 @@ def index():
 
 @app.route("/about")
 def about():
-    if 1 == 1:
-        return render_template("about.html")
+    return render_template("about.html")
 
 
 @app.route("/profile")
 def profile():
-    if 1 == 1:
-        return render_template("profile_html")
+    tableName = 'DushesTime'
+    email = 'max loh'
+    Get_user_bookings(tableName, email)
+    return render_template("profile_html")
 
 
 
 @app.route('/yandex-auth')
 def yandex_auth():
-    # Получаем код от Яндекс OAuth
     code = request.args.get('code')
 
     if not code:
         return redirect('/')
 
     try:
-        # 1. Получаем OAuth-токен
         token_url = 'https://oauth.yandex.ru/token'
         data = {
             'grant_type': 'authorization_code',
@@ -98,7 +88,6 @@ def yandex_auth():
         if not access_token:
             return redirect('/')
 
-        # 2. Получаем данные пользователя
         user_url = 'https://login.yandex.ru/info'
         headers = {'Authorization': f'OAuth {access_token}'}
         user_response = requests.get(user_url, headers=headers)
@@ -110,7 +99,6 @@ def yandex_auth():
         print(f"Логин: {user_data.get('login')}")
         print(f"Email: {user_data.get('default_email')}")
 
-        # Сохраняем данные в сессии
         session['authenticated'] = True
         session['user_data'] = {
             'id': user_data.get('id'),
@@ -127,20 +115,13 @@ def yandex_auth():
 
 @app.route('/logout')
 def logout():
-    # Очищаем сессию
     session.pop('authenticated', None)
     session.pop('user_data', None)
     return redirect(url_for('index'))
 
-
 if __name__ == '__main__':
-    if ('2024_01_01' in Take_out_column_db('DushesTime', 'day')) == False:
-        Create_TimeBook_db('DushesTime')
-    if ('2024_01_01' in Take_out_column_db('StickerTime', 'day')) == False:
-        Create_TimeBook_db('StickerTime')
-    if ('2024_01_01' in Take_out_column_db('InSpoTime', 'day')) == False:
-        Create_TimeBook_db('InSpoTime')
-    if ('2024_01_01' in Take_out_column_db('EuphoriaTime', 'day')) == False:
-        Create_TimeBook_db('EuphoriaTime')
-        
+    Create_TimeBook_db('DushesTime')
+    Create_TimeBook_db('StickerTime')
+    Create_TimeBook_db('InSpoTime')
+    Create_TimeBook_db('EuphoriaTime')
     app.run(debug=True)
