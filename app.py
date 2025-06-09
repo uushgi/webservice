@@ -1,8 +1,11 @@
 from flask import *
 from db import *
 import requests
+from Value import *
 
-date = '579'
+dateDB = '3'
+
+
 
 app = Flask(__name__)
 app.secret_key = '1221212121'  # Важно: замените на реальный секретный ключ!
@@ -14,6 +17,7 @@ CLIENT_SECRET = '2abc3be40fec4ccbba24572a9235260e'
 @app.route('/', methods=["POST", "GET"])
 def index():
 
+
     # Проверяем статус авторизации
     auth_status = session.get('authenticated', False)
     user_data = session.get('user_data', None)
@@ -22,28 +26,28 @@ def index():
     auth_success = request.args.get('auth_success', False)
 
     if True == 0:
-        nameOfForm = ''
-        #if request.form[nameOfForm] == "POST":
-        startTime = 'time_13_00'
-        endTime = 'time_14_30'
-        email = 'max lox'
-        flag = False
+        nameOfForm = 'booking'
+        if request.form[nameOfForm] == "POST":
+            startTime = 'time_13_00'
+            endTime = 'time_14_30'
+            email = 'max lox'
+            flag = False
 
-        while True:
-            Update_element_db('TimeBook', startTime, 'day', email, date)
-            if startTime[8:] == '30':
-                startTime = startTime.replace(startTime[5:7], str(int(startTime[5:7]) + 1))
-                startTime = startTime.replace(startTime[8:], '00')
-            else:
-                startTime = startTime.replace(startTime[8:], '30')
+            while True:
+                Update_element_db('TimeBook', startTime, 'day', email, dateDB)
+                if startTime[8:] == '30':
+                    startTime = startTime.replace(startTime[5:7], str(int(startTime[5:7]) + 1))
+                    startTime = startTime.replace(startTime[8:], '00')
+                else:
+                    startTime = startTime.replace(startTime[8:], '30')
 
-            if flag == True:
-                break
+                if flag == True:
+                    break
 
-            if startTime == endTime:
-                flag = True
+                if startTime == endTime:
+                    flag = True
 
-        return render_template("index.html")
+            return render_template("index.html")
 
 
     elif 'fff' in request.form:
@@ -129,6 +133,14 @@ def logout():
     return redirect(url_for('index'))
 
 
-
 if __name__ == '__main__':
+    if ('2024_01_01' in Take_out_column_db('DushesTime', 'day')) == False:
+        Create_TimeBook_db('DushesTime')
+    if ('2024_01_01' in Take_out_column_db('StickerTime', 'day')) == False:
+        Create_TimeBook_db('StickerTime')
+    if ('2024_01_01' in Take_out_column_db('InSpoTime', 'day')) == False:
+        Create_TimeBook_db('InSpoTime')
+    if ('2024_01_01' in Take_out_column_db('EuphoriaTime', 'day')) == False:
+        Create_TimeBook_db('EuphoriaTime')
+        
     app.run(debug=True)

@@ -1,4 +1,5 @@
 from sqlite3 import *
+from datetime import *
 
 connection = connect('db/dushess.db')
 cursor = connection.cursor()
@@ -25,8 +26,101 @@ CREATE TABLE IF NOT EXISTS BanUsers (
 ''')
 
 cursor.execute('''
-CREATE TABLE IF NOT EXISTS TimeBook (
-    day INTEGER PRIMARY KEY AUTOINCREMENT,
+CREATE TABLE IF NOT EXISTS DushesTime (
+    day TEXT NOT NULL,
+    time_10_00 INTEGER,
+    time_10_30 INTEGER,
+    time_11_00 INTEGER,
+    time_11_30 INTEGER,
+    time_12_00 INTEGER,
+    time_12_30 INTEGER,
+    time_13_00 INTEGER,
+    time_13_30 INTEGER,
+    time_14_00 INTEGER,
+    time_14_30 INTEGER,
+    time_15_00 INTEGER,
+    time_15_30 INTEGER,
+    time_16_00 INTEGER,
+    time_16_30 INTEGER,
+    time_17_00 INTEGER,
+    time_17_30 INTEGER,
+    time_18_00 INTEGER,
+    time_18_30 INTEGER,
+    time_19_00 INTEGER,
+    time_19_30 INTEGER,
+    time_20_00 INTEGER,
+    time_20_30 INTEGER,
+    time_21_00 INTEGER,
+    time_21_30 INTEGER,
+    time_22_00 INTEGER
+);
+''')
+
+cursor.execute('''
+CREATE TABLE IF NOT EXISTS EuphoriaTime (
+    day TEXT NOT NULL,
+    time_10_00 INTEGER,
+    time_10_30 INTEGER,
+    time_11_00 INTEGER,
+    time_11_30 INTEGER,
+    time_12_00 INTEGER,
+    time_12_30 INTEGER,
+    time_13_00 INTEGER,
+    time_13_30 INTEGER,
+    time_14_00 INTEGER,
+    time_14_30 INTEGER,
+    time_15_00 INTEGER,
+    time_15_30 INTEGER,
+    time_16_00 INTEGER,
+    time_16_30 INTEGER,
+    time_17_00 INTEGER,
+    time_17_30 INTEGER,
+    time_18_00 INTEGER,
+    time_18_30 INTEGER,
+    time_19_00 INTEGER,
+    time_19_30 INTEGER,
+    time_20_00 INTEGER,
+    time_20_30 INTEGER,
+    time_21_00 INTEGER,
+    time_21_30 INTEGER,
+    time_22_00 INTEGER
+);
+''')
+
+cursor.execute('''
+CREATE TABLE IF NOT EXISTS InSpoTime (
+    day TEXT NOT NULL,
+    time_10_00 INTEGER,
+    time_10_30 INTEGER,
+    time_11_00 INTEGER,
+    time_11_30 INTEGER,
+    time_12_00 INTEGER,
+    time_12_30 INTEGER,
+    time_13_00 INTEGER,
+    time_13_30 INTEGER,
+    time_14_00 INTEGER,
+    time_14_30 INTEGER,
+    time_15_00 INTEGER,
+    time_15_30 INTEGER,
+    time_16_00 INTEGER,
+    time_16_30 INTEGER,
+    time_17_00 INTEGER,
+    time_17_30 INTEGER,
+    time_18_00 INTEGER,
+    time_18_30 INTEGER,
+    time_19_00 INTEGER,
+    time_19_30 INTEGER,
+    time_20_00 INTEGER,
+    time_20_30 INTEGER,
+    time_21_00 INTEGER,
+    time_21_30 INTEGER,
+    time_22_00 INTEGER
+);
+''')
+
+cursor.execute('''
+CREATE TABLE IF NOT EXISTS StickerTime (
+    day TEXT NOT NULL,
     time_10_00 INTEGER,
     time_10_30 INTEGER,
     time_11_00 INTEGER,
@@ -85,11 +179,11 @@ def Update_element_db(tableName, columnSetType, indexColumn, replaceableElement,
     connection.commit()
     connection.close()
 
-def Take_out_element_db(tableName, columnType, numberOfElement):
+def Take_out_element_db(tableName, columnType, indexColumn, indexElement):
     connection = connect('db/dushess.db')
     cursor = connection.cursor()
 
-    cursor.execute(f'SELECT {columnType} FROM {tableName} LIMIT {numberOfElement},1')
+    cursor.execute(f'SELECT {columnType} FROM {tableName} WHERE {indexColumn} = ?', (indexElement,))
     return cursor.fetchone()
 
     connection.commit()
@@ -104,3 +198,14 @@ def Take_out_column_db(tableName, columnType):
 
     connection.commit()
     connection.close()
+
+
+def Create_TimeBook_db(tableName):
+    current_date = datetime.strptime('2024_01_01', '%Y_%m_%d')
+
+    for i in range(365):
+        formatted_date = current_date.strftime('%Y_%m_%d')
+        Add_element_db(tableName, 'day', day=formatted_date)
+        current_date += timedelta(days=1)
+
+#print(Take_out_element_db('TimeBook', '*', 'time_13_00', 'max lox'))
