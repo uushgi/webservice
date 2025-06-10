@@ -217,7 +217,6 @@ def Get_user_bookings(tableName, user_login):
     connection = connect('db/dushess.db')
     cursor = connection.cursor()
 
-    # Получаем все дни, где у пользователя есть бронирования
     cursor.execute(f'''
     SELECT day, 
            time_10_00, time_10_30, time_11_00, time_11_30,

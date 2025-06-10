@@ -5,8 +5,8 @@ document.addEventListener('DOMContentLoaded', function() {
     let selectedMonth = currentMonth;
     let selectedYear = currentYear;
     let selectedVenue = null;
-    let notificationTimeout = null;
     let selectedDate = null;
+    let notificationTimeout = null;
     
     const monthNames = ["Январь", "Февраль", "Март", "Апрель", "Май", "Июнь", 
                       "Июль", "Август", "Сентябрь", "Октябрь", "Ноябрь", "Декабрь"];
@@ -73,7 +73,7 @@ document.addEventListener('DOMContentLoaded', function() {
                          year === today.getFullYear();
             
             let currentDate = `${year}-${String(month + 1).padStart(2, '0')}-${String(i).padStart(2, '0')}`;
-            // этот ужас необходим для того, чтобы в бд в нужном формате дату передавать, с нулями
+            // бд с нулями в дате, так что форматируем с нулями
             // может временное решение, может нет
             let isSelected = selectedDate === currentDate;
             

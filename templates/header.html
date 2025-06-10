@@ -1,12 +1,13 @@
 <header>
-    <div class="logo">fefudance</div>
+    <div class="logo"><a href="{{ url_for('index') }}" class="logo-link">fefudance</a></div>
     <nav class="nav">
         <div class="dropdown">
             <button class="dropbtn">Площадки <span>&#9660;</span></button>
             <div class="dropdown-content">
-                {% for venue in venues %}
-                <a href="#">{{ venue.name }}</a>
-                {% endfor %}
+                <a href="{{ url_for('dushes') }}">Дюшес</a>
+                <a href="{{ url_for('sticker') }}">Sticker</a>
+                <a href="{{ url_for('euphoria') }}">Euphoria</a>
+                <a href="{{ url_for('inspo') }}">InSpo</a>
             </div>
         </div>
         <a href="#">Контакты</a>
@@ -27,4 +28,4 @@
             <div class="alert alert-success">Вы успешно вошли!</div>
         {% endif %}
     </div>
-</header> 
+</header>
