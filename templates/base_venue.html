@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}fefudance{% endblock %}</title>
+    <title>{% block title %}{% endblock %} | fefudance</title>
     <link rel="stylesheet" href="/static/css/style.css">
     {% block extra_css %}{% endblock %}
 </head>
@@ -13,9 +13,5 @@
     {% block content %}{% endblock %}
 
     {% include 'footer.html' %}
-
-    {% block scripts %}
-    <script src="static/js/calendar.js"></script>
-    {% endblock %}
 </body>
 </html> 
