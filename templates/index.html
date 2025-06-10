@@ -1,5 +1,6 @@
 {% extends "base.html" %}
 
+<div class="container">
 {% block content %}
 <div class="notifications">
     {% if booking_success %}
@@ -9,7 +10,7 @@
         <div class="alert alert-warning booking-notification">{{ error_message }}</div>
     {% endif %}
 </div>
-
+ 
 {% include 'calendar.html' %}
 
 <div class="right-column">
@@ -18,4 +19,4 @@
 </div>
 
 {% include 'faq.html' %}
-{% endblock %}
+{% endblock %}</div>

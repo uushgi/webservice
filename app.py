@@ -13,9 +13,6 @@ CLIENT_SECRET = '2abc3be40fec4ccbba24572a9235260e'
 def get_booked_slots():
     venue = request.args.get('venue')
     date = request.args.get('date')
-    
-    if not venue or not date:
-        return jsonify({'error': 'Missing venue or date'}), 400
         
     venue_to_table = {
         'Дюшес': 'DushesTime',
@@ -25,8 +22,6 @@ def get_booked_slots():
     }
     
     table_name = venue_to_table.get(venue)
-    if not table_name:
-        return jsonify({'error': 'Invalid venue'}), 400
     
     try:
         connection = connect('db/dushess.db')
@@ -151,6 +146,21 @@ def index():
 def about():
     return render_template("about.html")
 
+@app.route("/dushes")
+def dushes():
+    return render_template("dushes.html")
+
+@app.route("/sticker")
+def sticker():
+    return render_template("sticker.html")
+
+@app.route("/euphoria")
+def euphoria():
+    return render_template("euphoria.html")
+
+@app.route("/inspo")
+def inspo():
+    return render_template("inspo.html")
 
 @app.route("/profile")
 def profile():
