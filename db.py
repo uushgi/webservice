@@ -7,147 +7,67 @@ cursor = connection.cursor()
 cursor.execute('''
 CREATE TABLE IF NOT EXISTS Users (
 id INTEGER PRIMARY KEY AUTOINCREMENT,
-login TEXT UNIQUE NOT NULL);
+login TEXT UNIQUE NOT NULL,
+is_active INTEGER DEFAULT 1,
+is_can_Book INTEGER DEFAULT 1,
+is_admin INTEGER DEFAULT 0
+);
 ''')
 
+
 cursor.execute('''
-CREATE TABLE IF NOT EXISTS Admins (
+CREATE TABLE IF NOT EXISTS Booking (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
-    login TEXT UNIQUE NOT NULL,
-    password TEXT NOT NULL
+    venue_id INTEGER,
+    user_id INTEGER,
+    datetime TEXT NOT NULL,
+    time_start TEXT NOT NULL,
+    time_end TEXT NOT NULL,
+    datetime_of_booking TEXT NOT NULL,
+    FOREIGN KEY (user_id) REFERENCES Users (id)
+    FOREIGN KEY (venue_id) REFERENCES Venue (id)
 );
 ''')
 
 cursor.execute('''
-CREATE TABLE IF NOT EXISTS BanUsers (
+CREATE TABLE IF NOT EXISTS FAQ (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
-    login TEXT UNIQUE NOT NULL
+    question TEXT NOT NULL,
+    answer TEXT NOT NULL
 );
 ''')
 
 cursor.execute('''
-CREATE TABLE IF NOT EXISTS DushesTime (
-    day TEXT NOT NULL,
-    time_10_00 INTEGER,
-    time_10_30 INTEGER,
-    time_11_00 INTEGER,
-    time_11_30 INTEGER,
-    time_12_00 INTEGER,
-    time_12_30 INTEGER,
-    time_13_00 INTEGER,
-    time_13_30 INTEGER,
-    time_14_00 INTEGER,
-    time_14_30 INTEGER,
-    time_15_00 INTEGER,
-    time_15_30 INTEGER,
-    time_16_00 INTEGER,
-    time_16_30 INTEGER,
-    time_17_00 INTEGER,
-    time_17_30 INTEGER,
-    time_18_00 INTEGER,
-    time_18_30 INTEGER,
-    time_19_00 INTEGER,
-    time_19_30 INTEGER,
-    time_20_00 INTEGER,
-    time_20_30 INTEGER,
-    time_21_00 INTEGER,
-    time_21_30 INTEGER,
-    time_22_00 INTEGER
+CREATE TABLE IF NOT EXISTS News (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    datetime TEXT NOT NULL,
+    title TEXT NOT NULL,
+    content TEXT NOT NULL
 );
 ''')
 
 cursor.execute('''
-CREATE TABLE IF NOT EXISTS EuphoriaTime (
-    day TEXT NOT NULL,
-    time_10_00 INTEGER,
-    time_10_30 INTEGER,
-    time_11_00 INTEGER,
-    time_11_30 INTEGER,
-    time_12_00 INTEGER,
-    time_12_30 INTEGER,
-    time_13_00 INTEGER,
-    time_13_30 INTEGER,
-    time_14_00 INTEGER,
-    time_14_30 INTEGER,
-    time_15_00 INTEGER,
-    time_15_30 INTEGER,
-    time_16_00 INTEGER,
-    time_16_30 INTEGER,
-    time_17_00 INTEGER,
-    time_17_30 INTEGER,
-    time_18_00 INTEGER,
-    time_18_30 INTEGER,
-    time_19_00 INTEGER,
-    time_19_30 INTEGER,
-    time_20_00 INTEGER,
-    time_20_30 INTEGER,
-    time_21_00 INTEGER,
-    time_21_30 INTEGER,
-    time_22_00 INTEGER
+CREATE TABLE IF NOT EXISTS Venue (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    name TEXT NOT NULL,
+    description TEXT NOT NULL,
+    likes INTEGER DEFAULT 0,
+    template_name TEXT NOT NULL
 );
 ''')
 
 cursor.execute('''
-CREATE TABLE IF NOT EXISTS InSpoTime (
-    day TEXT NOT NULL,
-    time_10_00 INTEGER,
-    time_10_30 INTEGER,
-    time_11_00 INTEGER,
-    time_11_30 INTEGER,
-    time_12_00 INTEGER,
-    time_12_30 INTEGER,
-    time_13_00 INTEGER,
-    time_13_30 INTEGER,
-    time_14_00 INTEGER,
-    time_14_30 INTEGER,
-    time_15_00 INTEGER,
-    time_15_30 INTEGER,
-    time_16_00 INTEGER,
-    time_16_30 INTEGER,
-    time_17_00 INTEGER,
-    time_17_30 INTEGER,
-    time_18_00 INTEGER,
-    time_18_30 INTEGER,
-    time_19_00 INTEGER,
-    time_19_30 INTEGER,
-    time_20_00 INTEGER,
-    time_20_30 INTEGER,
-    time_21_00 INTEGER,
-    time_21_30 INTEGER,
-    time_22_00 INTEGER
+CREATE TABLE IF NOT EXISTS Photo (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    path TEXT NOT NULL,
+    name TEXT,
+    venue_id INTEGER,
+    FOREIGN KEY (venue_id) REFERENCES Venue (id)
 );
 ''')
 
-cursor.execute('''
-CREATE TABLE IF NOT EXISTS StickerTime (
-    day TEXT NOT NULL,
-    time_10_00 INTEGER,
-    time_10_30 INTEGER,
-    time_11_00 INTEGER,
-    time_11_30 INTEGER,
-    time_12_00 INTEGER,
-    time_12_30 INTEGER,
-    time_13_00 INTEGER,
-    time_13_30 INTEGER,
-    time_14_00 INTEGER,
-    time_14_30 INTEGER,
-    time_15_00 INTEGER,
-    time_15_30 INTEGER,
-    time_16_00 INTEGER,
-    time_16_30 INTEGER,
-    time_17_00 INTEGER,
-    time_17_30 INTEGER,
-    time_18_00 INTEGER,
-    time_18_30 INTEGER,
-    time_19_00 INTEGER,
-    time_19_30 INTEGER,
-    time_20_00 INTEGER,
-    time_20_30 INTEGER,
-    time_21_00 INTEGER,
-    time_21_30 INTEGER,
-    time_22_00 INTEGER
-);
-''')
+
+
 
 def Add_element_db(tableName, *columnNames, **values):
     connection = connect('db/dushess.db')
@@ -184,65 +104,30 @@ def Take_out_element_db(tableName, columnType, indexColumn, indexElement):
     cursor = connection.cursor()
 
     cursor.execute(f'SELECT {columnType} FROM {tableName} WHERE {indexColumn} = ?', (indexElement,))
-    return cursor.fetchone()
 
     connection.commit()
     connection.close()
+    return cursor.fetchone()
+
 
 def Take_out_column_db(tableName, columnType):
     connection = connect('db/dushess.db')
     cursor = connection.cursor()
 
     cursor.execute(f'SELECT {columnType} FROM {tableName}')
-    return cursor.fetchall()
 
     connection.commit()
     connection.close()
+    return cursor.fetchall()
 
 
-def Create_TimeBook_db(tableName):
-    try:
-        if Take_out_column_db(tableName, 'day')[0]:
-            None
-    except:
-        current_date = datetime.strptime('2025-01-01', '%Y-%m-%d')
 
-        for i in range(365):
-            formatted_date = current_date.strftime('%Y-%m-%d')
-            Add_element_db(tableName, 'day', day=formatted_date)
-            current_date += timedelta(days=1)
-
-
-def Get_user_bookings(tableName, user_login):
+def Get_user_bookings(user_id):
     connection = connect('db/dushess.db')
     cursor = connection.cursor()
 
-    cursor.execute(f'''
-    SELECT day, 
-           time_10_00, time_10_30, time_11_00, time_11_30,
-           time_12_00, time_12_30, time_13_00, time_13_30,
-           time_14_00, time_14_30, time_15_00, time_15_30,
-           time_16_00, time_16_30, time_17_00, time_17_30,
-           time_18_00, time_18_30, time_19_00, time_19_30,
-           time_20_00, time_20_30, time_21_00, time_21_30,
-           time_22_00
-    FROM {tableName}
-    WHERE time_10_00 = ? OR time_10_30 = ? OR time_11_00 = ? OR time_11_30 = ? OR
-          time_12_00 = ? OR time_12_30 = ? OR time_13_00 = ? OR time_13_30 = ? OR
-          time_14_00 = ? OR time_14_30 = ? OR time_15_00 = ? OR time_15_30 = ? OR
-          time_16_00 = ? OR time_16_30 = ? OR time_17_00 = ? OR time_17_30 = ? OR
-          time_18_00 = ? OR time_18_30 = ? OR time_19_00 = ? OR time_19_30 = ? OR
-          time_20_00 = ? OR time_20_30 = ? OR time_21_00 = ? OR time_21_30 = ? OR
-          time_22_00 = ?
-    ''', (user_login,) * 25)
+    cursor.execute(f'SELECT id AND venue_id AND datetime AND time_start AND time_end AND datetime_of_booking FROM Booking WHERE user_id = ?', (user_id,))
 
-    bookings = []
-    for row in cursor.fetchall():
-        day = row[0]
-        for i in range(1, 25):
-            if row[i] == user_login:
-                time_slot = f"time_{10 + (i - 1) // 2}:{(i - 1) % 2 * 30:02d}"
-                bookings.append({'day': day, 'time': time_slot, 'room': tableName})
-
+    connection.commit()
     connection.close()
-    return bookings
+    return cursor.fetchall()
