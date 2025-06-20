@@ -1,6 +1,7 @@
 from flask import *
 from db import *
 import requests
+from sqlite3 import connect
 
 app = Flask(__name__)
 app.secret_key = '324235515436'
@@ -13,29 +14,7 @@ CLIENT_SECRET = '2abc3be40fec4ccbba24572a9235260e'
 def get_booked_slots():
     venue = request.args.get('venue')
     date = request.args.get('date')
-
-    if not venue or not date:
-        return jsonify({'error': 'Missing venue or date'}), 400
-
-    venue_to_table = {
-        'Дюшес': 'DushesTime',
-        'Sticker': 'StickerTime',
-        'Euphoria': 'EuphoriaTime',
-        'InSpo': 'InSpoTime'
-    }
-
-    table_name = venue_to_table.get(venue)
-
-    row = Take_out_element_db(table_name, '*', 'day', date)
-    if not row:
-        return jsonify({'booked_slots': []})
-
-    booked_slots = []
-    for i in range(1, len(row), 2):  # временная штука, пока у нас бронь по часу. по 2 шагает и проверяет оба
-        if row[i] is not None and row[i + 1] is not None:
-            hour = 10 + ((i - 1) // 2)
-            booked_slots.append(f"{hour:02d}:00")
-
+    booked_slots = get_booked_slots_db(venue, date)
     return jsonify({'booked_slots': booked_slots})
 
 
@@ -71,35 +50,34 @@ def index():
 
         venue = request.form.get('venue')
         date = request.form.get('date')
-        time = request.form.get('time')
+        times = request.form.getlist('times[]')
 
-        if not all([venue, date, time]):
+        if not all([venue, date, times]) or len(times) == 0:
             session['error_message'] = 'Пожалуйста, выберите дату и время'
             return redirect(url_for('index'))
 
-        venue_to_table = {
-            'Дюшес': 'DushesTime',
-            'Sticker': 'StickerTime',
-            'Euphoria': 'EuphoriaTime',
-            'InSpo': 'InSpoTime'
-        }
+        user_email = user_data['email']
+        connection = connect('db/dushess.db')
+        cursor = connection.cursor()
 
-        table_name = venue_to_table.get(venue)
+        times_sorted = sorted(times)
+        time_start = times_sorted[0]
+        time_end = times_sorted[-1]
 
-        hour = time.split(':')[0]  # берем только часы пока что
-        time_column_1 = f"time_{hour}_00"
-        time_column_2 = f"time_{hour}_30"
+        cursor.execute('SELECT time_start, time_end FROM Booking WHERE venue_id = ? AND datetime = ?', (venue, date))
+        rows = cursor.fetchall()
+        for b_start, b_end in rows:
+            if not (b_end < time_start or b_start > time_end):
+                connection.close()
+                return redirect(url_for('index'))
 
-        row = Take_out_element_db(table_name, f"{time_column_1}, {time_column_2}", 'day', date)
-        if row and (row[0] is not None or row[1] is not None):
-            session['error_message'] = 'Это время уже забронировано'
-            return redirect(url_for('index'))
-
-        Update_element_db(table_name, time_column_1, 'day', user_data['email'], date)
-        Update_element_db(table_name, time_column_2, 'day', user_data['email'], date)
-
-        print(f"бронь: {user_data['email']} | {venue} | {date} | {time}")
-
+        cursor.execute('''
+            INSERT INTO Booking (venue_id, user_id, datetime, time_start, time_end, datetime_of_booking)
+            VALUES (?, ?, ?, ?, ?, datetime("now"))
+        ''', (venue, user_email, date, time_start, time_end))
+        connection.commit()
+        connection.close()
+        print(f"бронь: {user_email} | {venue} | {date} | {time_start}-{time_end}")
         session['booking_success'] = True
         return redirect(url_for('index'))
 
@@ -135,12 +113,21 @@ def inspo():
 
 @app.route("/profile")
 def profile():
-    tableName = 'DushesTime'
     email = 'max loh'
-    Get_user_bookings(tableName, email)
-    return render_template("profile_html")
+    Get_user_bookings(email)
+    return render_template("profile.html")
 
+@app.route("/catalogue")
+def catalogue():
+    return render_template("catalogue.html")
 
+@app.route("/contacts")
+def contacts():
+    return render_template("contacts.html")
+
+@app.route("/adminpanel")
+def adminpanel():
+    return render_template("adminpanel.html")
 
 @app.route('/yandex-auth')
 def yandex_auth():
@@ -173,14 +160,24 @@ def yandex_auth():
         user_data = user_response.json()
         print("\n--- Данные пользователя ---")
         print(f"ID: {user_data.get('id')}")
-        print(f"Логин: {user_data.get('login')}")
         print(f"Email: {user_data.get('default_email')}")
+
+        email = user_data.get('default_email')
+        if not email:
+            return redirect('/')
+
+        connection = connect('db/dushess.db')
+        cursor = connection.cursor()
+        cursor.execute('SELECT id FROM Users WHERE login = ?', (email,))
+        exists = cursor.fetchone()
+        if not exists:
+            cursor.execute('INSERT INTO Users (login) VALUES (?)', (email,))
+            connection.commit()
+        connection.close()
 
         session['authenticated'] = True
         session['user_data'] = {
-            'id': user_data.get('id'),
-            'login': user_data.get('login'),
-            'email': user_data.get('default_email')
+            'email': email
         }
 
         return redirect(url_for('index', auth_success=True))
@@ -196,9 +193,23 @@ def logout():
     session.pop('user_data', None)
     return redirect(url_for('index'))
 
+@app.context_processor
+def inject_globals():
+    return {
+        'CLIENT_ID': CLIENT_ID,
+        'auth_status': session.get('authenticated', False),
+        'user_data': session.get('user_data', None),
+        'auth_success': session.get('auth_success', False)
+    }
+
+def Get_user_bookings(user_id):
+    connection = connect('db/dushess.db')
+    cursor = connection.cursor()
+
+    cursor.execute('SELECT id, venue_id, datetime, time_start, time_end, datetime_of_booking FROM Booking WHERE user_id = ?', (user_id,))
+    result = cursor.fetchall()
+    connection.close()
+    return result
+
 if __name__ == '__main__':
-    Create_TimeBook_db('DushesTime')
-    Create_TimeBook_db('StickerTime')
-    Create_TimeBook_db('InSpoTime')
-    Create_TimeBook_db('EuphoriaTime')
     app.run(debug=True)
