@@ -2,7 +2,7 @@
     <div class="logo"><a href="{{ url_for('index') }}" class="logo-link">fefudance</a></div>
     <nav class="nav">
         <div class="dropdown">
-            <button class="dropbtn">Площадки <span>&#9660;</span></button>
+            <a href="{{ url_for('catalogue') }}" class="dropbtn">Площадки <span>&#9660;</span></a>
             <div class="dropdown-content">
                 <a href="{{ url_for('dushes') }}">Дюшес</a>
                 <a href="{{ url_for('sticker') }}">Sticker</a>
@@ -10,13 +10,16 @@
                 <a href="{{ url_for('inspo') }}">InSpo</a>
             </div>
         </div>
-        <a href="#">Контакты</a>
+        <a href="{{ url_for('contacts') }}">Контакты</a>
     </nav>
     <div class="lang-login">
         {% if auth_status %}
-            <div class="user-info">
-                <p>{{ user_data.login }}</p>
-                <a href="{{ url_for('logout') }}" class="login-btn">Выйти</a>
+            <div class="dropdown user-dropdown">
+                <button class="dropbtn">{{ user_data.email }} <span>&#9660;</span></button>
+                <div class="dropdown-content">
+                    <a href="{{ url_for('profile') }}">Профиль</a>
+                    <a href="{{ url_for('logout') }}">Выйти</a>
+                </div>
             </div>
         {% else %}
             <a href="https://oauth.yandex.ru/authorize?response_type=code&client_id={{ CLIENT_ID }}" class="login-btn">

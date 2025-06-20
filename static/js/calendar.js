@@ -38,14 +38,16 @@ document.addEventListener('DOMContentLoaded', function() {
     
     venueTabs.forEach(tab => {
         tab.addEventListener('click', function() {
+            firstHalfIndex = null;
+            lastHalfIndex = null;
+            selectedHalfIndices = [];
+            fullResetHalfSelection();
             venueTabs.forEach(t => t.classList.remove('active'));
             this.classList.add('active');
             selectedVenue = this.textContent;
-            
             if (selectedDate) {
                 updateBookedSlots(selectedVenue, selectedDate);
             }
-            
             renderCalendar(selectedMonth, selectedYear);
         });
     });
@@ -60,7 +62,6 @@ document.addEventListener('DOMContentLoaded', function() {
         
         let daysHtml = '';
         
-        // месяцы до
         for (let i = firstDay === 0 ? 6 : firstDay - 1; i > 0; i--) {
             daysHtml += `<div class="prev-date">${daysInPrevMonth - i + 1}</div>`;
         }
@@ -93,31 +94,135 @@ document.addEventListener('DOMContentLoaded', function() {
         addDayEventListeners();
     }
     
+    let firstHalfIndex = null;
+    let lastHalfIndex = null;
+    let selectedHalfIndices = [];
+
+    function updateSlotTextSelection() {
+        document.querySelectorAll('.time-slot').forEach(slot => {
+            const leftHalf = slot.querySelector('.slot-half.left');
+            const rightHalf = slot.querySelector('.slot-half.right');
+            const leftText = slot.querySelector('.slot-text.left');
+            const rightText = slot.querySelector('.slot-text.right');
+            const dashText = slot.querySelector('.slot-text.dash');
+            const leftSelected = leftHalf.classList.contains('selected');
+            const rightSelected = rightHalf.classList.contains('selected');
+            
+            leftText.classList.remove('selected');
+            rightText.classList.remove('selected');
+            dashText.classList.remove('selected');
+
+            if (leftSelected && rightSelected) {
+                leftText.classList.add('selected');
+                rightText.classList.add('selected');
+                dashText.classList.add('selected');
+            } else if (leftSelected) {
+                leftText.classList.add('selected');
+            } else if (rightSelected) {
+                rightText.classList.add('selected');
+            }
+        });
+    }
+
+    function fullResetHalfSelection() {
+        document.querySelectorAll('.slot-half').forEach(s => s.classList.remove('selected'));
+        firstHalfIndex = null;
+        lastHalfIndex = null;
+        selectedHalfIndices = [];
+        updateSlotTextSelection();
+    }
+
+    function resetHalfSelection() {
+        document.querySelectorAll('.slot-half').forEach(s => s.classList.remove('selected'));
+        updateSlotTextSelection();
+    }
+
+    function getSlotHalves() {
+        return Array.from(document.querySelectorAll('.slot-half'));
+    }
+
+    function addSlotHalfEventListeners() {
+        getSlotHalves().forEach((half, idx) => {
+            const newHalf = half.cloneNode(true);
+            half.parentNode.replaceChild(newHalf, half);
+        });
+        getSlotHalves().forEach((half, idx) => {
+            half.addEventListener('click', function() {
+                if (half.classList.contains('booked')) {
+                    showNotification('Это время уже забронировано');
+                    return;
+                }
+                // первый клик
+                if (firstHalfIndex === null) {
+                    fullResetHalfSelection();
+                    firstHalfIndex = idx;
+                    half.classList.add('selected');
+                    selectedHalfIndices = [idx];
+                    updateSlotTextSelection();
+                    return;
+                }
+                // второй клик
+                if (lastHalfIndex === null) {
+                    lastHalfIndex = idx;
+                    let start = Math.min(firstHalfIndex, lastHalfIndex);
+                    let end = Math.max(firstHalfIndex, lastHalfIndex);
+                    let range = [];
+                    let hasBooked = false;
+                    getSlotHalves().forEach((s, i) => {
+                        if (i >= start && i <= end) {
+                            if (s.classList.contains('booked')) {
+                                hasBooked = true;
+                            }
+                            range.push(i);
+                        }
+                    });
+                    if (hasBooked) {
+                        showNotification('В выбранном диапазоне есть занятые слоты');
+                        fullResetHalfSelection();
+                        return;
+                    }
+                    if (range.length > 6) {
+                        showNotification('Нельзя выбрать больше 3 часов подряд');
+                        fullResetHalfSelection();
+                        return;
+                    }
+                    range.forEach(i => getSlotHalves()[i].classList.add('selected'));
+                    selectedHalfIndices = range;
+                    updateSlotTextSelection();
+                    return;
+                }
+                // третий клик сброс
+                resetHalfSelection();
+                firstHalfIndex = idx;
+                lastHalfIndex = null;
+                selectedHalfIndices = [idx];
+                half.classList.add('selected');
+                updateSlotTextSelection();
+            });
+        });
+    }
 
     async function updateBookedSlots(venue, date) {
         try {
             let response = await fetch(`/get-booked-slots?venue=${encodeURIComponent(venue)}&date=${encodeURIComponent(date)}`);
             let data = await response.json();
-            
             if (data.error) {
                 console.error('Error fetching booked slots:', data.error);
                 return;
             }
-            
-            document.querySelectorAll('.time-slot').forEach(slot => {
-                let time = slot.textContent.split(' - ')[0];
+            document.querySelectorAll('.slot-half').forEach(half => {
+                let time = half.getAttribute('data-time');
                 if (data.booked_slots.includes(time)) {
-                    slot.classList.add('booked');
-                    slot.classList.remove('selected');
+                    half.classList.add('booked');
+                    half.classList.remove('selected');
                 } else {
-                    slot.classList.remove('booked');
+                    half.classList.remove('booked');
                 }
             });
         } catch (error) {
             console.error('Error:', error);
         }
     }
-    
 
     function showNotification(message) {
         const existingNotification = document.querySelector('.alert');
@@ -148,79 +253,64 @@ document.addEventListener('DOMContentLoaded', function() {
     function addDayEventListeners() {
         let days = document.querySelectorAll('.days div:not(.prev-date):not(.next-date)');
         let cancelBtn = document.querySelector('.cancel-btn');
-        
         days.forEach(day => {
             day.addEventListener('click', function() {
                 if (!selectedVenue) {
                     showNotification('Пожалуйста, сначала выберите площадку');
                     return;
                 }
-                
                 days.forEach(d => d.classList.remove('selected'));
                 this.classList.add('selected');
-                
                 selectedDate = this.getAttribute('data-date');
                 timeSlots.style.display = 'block';
                 timeSlots.setAttribute('data-venue', selectedVenue);
                 timeSlots.setAttribute('data-date', selectedDate);
-                
                 updateBookedSlots(selectedVenue, selectedDate);
+
+                firstHalfIndex = null;
+                lastHalfIndex = null;
+                selectedHalfIndices = [];
+                fullResetHalfSelection();
+                addSlotHalfEventListeners();
             });
         });
-        
-        document.querySelectorAll('.time-slot').forEach(slot => {
-            slot.addEventListener('click', function() {
-                if (this.classList.contains('booked')) {
-                    showNotification('Это время уже забронировано');
-                    return;
-                }
-                document.querySelectorAll('.time-slot').forEach(s => s.classList.remove('selected'));
-                this.classList.add('selected');
-            });
-        });
-        
         cancelBtn.addEventListener('click', () => {
             days.forEach(d => d.classList.remove('selected'));
-            document.querySelectorAll('.time-slot').forEach(s => s.classList.remove('selected'));
+            fullResetHalfSelection();
             timeSlots.style.display = 'none';
             selectedDate = null;
         });
     }
     
 
+    // --- SUBMIT FORM WITH ARRAY OF TIMES ---
     if (bookingForm) {
         bookingForm.addEventListener('submit', function(e) {
             let selectedDay = document.querySelector('.days div.selected');
-            let selectedTimeSlot = document.querySelector('.time-slot.selected');
-            
-            if (!selectedDay || !selectedTimeSlot) {
+            let halves = getSlotHalves().filter(s => s.classList.contains('selected'));
+            if (!selectedDay || halves.length === 0) {
                 e.preventDefault();
                 showNotification('Пожалуйста, выберите дату и время');
                 return;
             }
-            
-            if (selectedTimeSlot.classList.contains('booked')) {
-                e.preventDefault();
-                showNotification('Это время уже забронировано');
-                return;
-            }
-            
+            let times = halves.map(h => h.getAttribute('data-time'));
+            Array.from(this.querySelectorAll('input[name="times[]"]')).forEach(i => i.remove());
+            times.forEach(t => {
+                this.appendChild(Object.assign(document.createElement('input'), {
+                    type: 'hidden',
+                    name: 'times[]',
+                    value: t
+                }));
+            });
             this.appendChild(Object.assign(document.createElement('input'), {
                 type: 'hidden',
                 name: 'venue',
                 value: selectedVenue
             }));
-            
             this.appendChild(Object.assign(document.createElement('input'), {
                 type: 'hidden',
                 name: 'date',
                 value: selectedDay.getAttribute('data-date')
-            }));
-            
-            this.appendChild(Object.assign(document.createElement('input'), {
-                type: 'hidden',
-                name: 'time',
-                value: selectedTimeSlot.textContent.split(' - ')[0]
             }));
         });
     }

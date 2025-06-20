@@ -131,3 +131,23 @@ def Get_user_bookings(user_id):
     connection.commit()
     connection.close()
     return cursor.fetchall()
+
+def get_booked_slots_db(venue_id, date):
+    connection = connect('db/dushess.db')
+    cursor = connection.cursor()
+    cursor.execute('SELECT time_start, time_end FROM Booking WHERE venue_id = ? AND datetime = ?', (venue_id, date))
+    rows = cursor.fetchall()
+    connection.close()
+
+    booked_slots = set()
+    for time_start, time_end in rows:
+        h1, m1 = map(int, time_start.split(':'))
+        h2, m2 = map(int, time_end.split(':'))
+        t1 = h1 * 60 + m1
+        t2 = h2 * 60 + m2
+
+        t = t1
+        while t <= t2:
+            booked_slots.add(f'{t//60:02d}:{t%60:02d}')
+            t += 30
+    return sorted(booked_slots)

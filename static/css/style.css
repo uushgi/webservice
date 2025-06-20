@@ -228,13 +228,61 @@ header {
     background: rgb(224, 231, 239);
     border-radius: 10px;
     text-align: center;
-    cursor: pointer;
     transition: all 0.2s;
     font-size: 1.1rem;
+    position: relative;
+}
+
+.slot-half {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 50%;
+    z-index: 2;
+    cursor: pointer;
+    background: none;
+}
+
+.slot-half.left {
+    left: 0;
+}
+
+.slot-half.right {
+    right: 0;
+}
+
+.slot-half.selected,
+.slot-half.booked {
+    background: none;
+}
+
+.slot-half.selected::before,
+.slot-half.booked::before {
+    content: '';
+    position: absolute;
+    top: 0; bottom: 0;
+    left: 0; right: 0;
+    z-index: 1;
+    pointer-events: none;
+}
+.slot-half.left.selected::before,
+.slot-half.left.booked::before {
+    border-radius: 10px 0 0 10px;
+}
+.slot-half.right.selected::before,
+.slot-half.right.booked::before {
+    border-radius: 0 10px 10px 0;
+}
+.slot-half.selected::before {
+    background: #197cfa;
+}
+.slot-half.booked::before {
+    background: #ffffff;
+    opacity: 0.6;
 }
 
 .time-slot:hover {
-    background: #d0e2ff;
+    background: #f0f0f0;
     border-color: #197cfa;
 }
 
@@ -249,6 +297,8 @@ header {
     background: #197cfa;
     color: white;
 }
+
+.time-slot .slot-text.selected { color: #fff !important; background: #197cfa !important; z-index: 3; position: relative; }
 
 .booking-actions {
     margin-top: 15px;
@@ -765,6 +815,44 @@ header {
     font-size: 0.9rem;
 }
 
+.slot-text { color: #222; transition: color 0.2s; }
+.slot-text.selected { color: #fff; }
+
+.admin-textblock {
+    max-width: 350px;
+    margin-left: 0;
+    margin-right: auto;
+}
+
+.admin-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-top: 20px;
+    align-items: stretch;
+}
+.admin-buttons button {
+    width: 100%;
+    min-width: 0;
+    padding: 10px 0;
+    font-size: 1.1rem;
+    border: none;
+    border-radius: 8px;
+    background: #197cfa;
+    color: #fff;
+    cursor: pointer;
+    transition: background 0.2s, color 0.2s;
+    box-sizing: border-box;
+}
+.admin-buttons button:hover {
+    background: #125bb5;
+}
+
+.user-dropdown .dropdown-content {
+    min-width: 180px;
+}
+
+
 @media (max-width: 1200px) {
     .container {
         grid-template-columns: 1fr;
@@ -977,4 +1065,3 @@ header {
         visibility: hidden;
     }
 }
-
