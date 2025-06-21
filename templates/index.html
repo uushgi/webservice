@@ -14,7 +14,23 @@
 {% include 'calendar.html' %}
 
 <div class="right-column">
-    {% include 'news.html' %}
+    <div class="news-composite-wrapper">
+        <div class="fefurry-container">
+            <img src="/static/images/form-fox-desctop4.png" alt="фефурри" class="fefurry-image">
+        </div>
+        <div class="news-sidebar">
+            <div class="news-title">Новости</div>
+            <div class="news-list-scroll">
+                {% for n in news %}
+                    <div class="news-item">
+                        <h3>{{ n.title }}</h3>
+                        <div class="news-date">{{ n.date }}</div>
+                        <p>{{ n.text }}</p>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
     {% include 'venues.html' %}
 </div>
 

@@ -66,7 +66,16 @@ CREATE TABLE IF NOT EXISTS Photo (
 );
 ''')
 
-
+cursor.execute('''
+CREATE TABLE IF NOT EXISTS VenueLikes (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id INTEGER NOT NULL,
+    venue_id INTEGER NOT NULL,
+    UNIQUE(user_id, venue_id),
+    FOREIGN KEY (user_id) REFERENCES Users (id),
+    FOREIGN KEY (venue_id) REFERENCES Venue (id)
+);
+''')
 
 
 def Add_element_db(tableName, *columnNames, **values):
@@ -132,6 +141,31 @@ def Get_user_bookings(user_id):
     connection.close()
     return cursor.fetchall()
 
+def get_user_bookings_split(user_id):
+    connection = connect('db/dushess.db')
+    cursor = connection.cursor()
+    cursor.execute('''
+        SELECT Booking.id, Venue.name, Booking.datetime, Booking.time_start, Booking.time_end, Booking.datetime_of_booking
+        FROM Booking
+        JOIN Venue ON Booking.venue_id = Venue.id
+        WHERE Booking.user_id = ?
+    ''', (user_id,))
+    bookings = cursor.fetchall()
+    connection.close()
+
+    now = datetime.now()
+    active = []
+    history = []
+    for b in bookings:
+        b_date = b[2]
+        b_end = b[4]
+        dt = datetime.strptime(b_date + ' ' + b_end, '%Y-%m-%d %H:%M')
+        if dt >= now:
+            active.append(b)
+        else:
+            history.append(b)
+    return active, history
+
 def get_booked_slots_db(venue_id, date):
     connection = connect('db/dushess.db')
     cursor = connection.cursor()
@@ -151,3 +185,32 @@ def get_booked_slots_db(venue_id, date):
             booked_slots.add(f'{t//60:02d}:{t%60:02d}')
             t += 30
     return sorted(booked_slots)
+
+def get_venues_with_likes(user_email=None):
+    connection = connect('db/dushess.db')
+    cursor = connection.cursor()
+    cursor.execute('''
+        SELECT Venue.id, Venue.name, Venue.likes, Photo.path
+        FROM Venue
+        LEFT JOIN Photo ON Venue.id = Photo.venue_id
+    ''')
+    venues = cursor.fetchall()
+    user_likes = set()
+    if user_email:
+        cursor.execute('SELECT id FROM Users WHERE login = ?', (user_email,))
+        user = cursor.fetchone()
+        if user:
+            user_id = user[0]
+            cursor.execute('SELECT venue_id FROM VenueLikes WHERE user_id = ?', (user_id,))
+            user_likes = set(row[0] for row in cursor.fetchall())
+    result = []
+    for v in venues:
+        result.append({
+            'id': v[0],
+            'name': v[1],
+            'likes': v[2],
+            'image': v[3] or '',
+            'liked': v[0] in user_likes
+        })
+    connection.close()
+    return result

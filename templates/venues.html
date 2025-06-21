@@ -4,11 +4,26 @@
         {% for venue in venues %}
         <div class="venue-card">
             <div class="venue-photo">
-                <img src="/static/images/{{ venue.image }}" alt="{{ venue.name }}" style="width: 100%; height: 100%; object-fit: cover;">
+                {% if venue.name == 'Дюшес' %}
+                <a href="/dushes" class="venue-photo-link">
+                {% elif venue.name == 'Sticker' %}
+                <a href="/sticker" class="venue-photo-link">
+                {% elif venue.name == 'Euphoria' %}
+                <a href="/euphoria" class="venue-photo-link">
+                {% elif venue.name == 'Inspo' %}
+                <a href="/inspo" class="venue-photo-link">
+                {% else %}
+                <a href="#" class="venue-photo-link">
+                {% endif %}
+                    <img src="{{ venue.image }}" alt="{{ venue.name }}" style="width: 100%; height: 100%; object-fit: cover; display: block;">
+                </a>
             </div>
             <div class="venue-info">
                 <div class="venue-name">{{ venue.name }}</div>
-                <div class="venue-likes-count">{{ venue.likes }}</div>
+                <div class="venue-likes-count" data-venue-id="{{ venue.id }}">
+                    <span class="likes-num">{{ venue.likes }}</span>
+                    <span class="like-heart{% if venue.liked %} liked{% endif %}{% if not auth_status %} disabled{% endif %}">♥</span>
+                </div>
             </div>
         </div>
         {% endfor %}

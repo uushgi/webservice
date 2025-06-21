@@ -1,22 +1,15 @@
 {% extends "base_venue.html" %}
-{% block title %}Контакты{% endblock %}
+{% block title %}Админпанель{% endblock %}
 
 {% block content %}
-<div class="venue-page">
-    <div class="venue-textblock admin-textblock">
-        <h2>админская панель</h2>
-        <div class="admin-buttons">
-            <button>активные брони</button>
-            <button>отмена бронирования</button>
-            <button>история бронирования</button>
-            <button>админская бронь</button>
-            <button>изменение фото</button>
-            <button>изменение текста</button>
-            <button>бан пользователя</button>
-            <button>что-то</button>
-            <button>что-то</button>
-            <button>что-то</button>
-        </div>
+<div class="admin-panel-center">
+    <div class="admin-panel-buttons">
+        <a href="{{ url_for('admin_active_bookings') }}" class="admin-btn">Активные брони</a>
+        <a href="{{ url_for('admin_booking_history') }}" class="admin-btn">История бронирования</a>
+        <a href="{{ url_for('admin_edit_photo') }}" class="admin-btn">Изменение фото</a>
+        <a href="{{ url_for('admin_edit_text') }}" class="admin-btn">Изменение текста</a>
+        <a href="{{ url_for('admin_ban_user') }}" class="admin-btn">Бан пользователя</a>
+        <a href="{{ url_for('admin_ban_user') }}" class="admin-btn">Плейсхолдер</a>
     </div>
 </div>
 {% endblock %} 
