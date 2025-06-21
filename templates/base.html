@@ -7,7 +7,7 @@
     <link rel="stylesheet" href="/static/css/style.css">
     {% block extra_css %}{% endblock %}
 </head>
-<body>
+<body class="index-page">
     {% include 'header.html' %}
 
     <div class="container">
@@ -16,6 +16,7 @@
 
     {% include 'footer.html' %}
 
+    <script src="{{ url_for('static', filename='js/venue_likes.js') }}"></script>
     {% block scripts %}
     <script src="static/js/calendar.js"></script>
     {% endblock %}

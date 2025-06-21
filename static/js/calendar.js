@@ -44,7 +44,7 @@ document.addEventListener('DOMContentLoaded', function() {
             fullResetHalfSelection();
             venueTabs.forEach(t => t.classList.remove('active'));
             this.classList.add('active');
-            selectedVenue = this.textContent;
+            selectedVenue = this.dataset.venueId;
             if (selectedDate) {
                 updateBookedSlots(selectedVenue, selectedDate);
             }

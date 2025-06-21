@@ -2,14 +2,52 @@
 {% block title %}Профиль{% endblock %}
 
 {% block content %}
-<div class="venue-page">
-    <div class="venue-textblock admin-textblock">
-        <h2>ватева</h2>
-        <div class="admin-buttons">
-            <button>активные бронирования</button>
-            <button>история бронирования</button>
+<div class="profile-split">
+    <div class="profile-half left">
+        <h2>Актуальные бронирования</h2>
+        <div class="active-scroll">
+            <ul class="booking-list">
+            {% if active_bookings %}
+                {% for b in active_bookings[:2] %}
+                    <li class="booking-item">
+                        <div>
+                            <b>Площадка:</b> {{ b[1] }}<br>
+                            <b>Дата:</b> {{ b[2] }}<br>
+                            <b>Время:</b> {{ b[3] }} - {{ b[4] }}
+                        </div>
+                        <form method="post" style="display:inline; margin-left: 10px;">
+                            <input type="hidden" name="booking_id" value="{{ b[0] }}">
+                            <button type="submit" name="cancel_booking" class="booking-cancel-btn">Отменить</button>
+                        </form>
+                    </li>
+                {% endfor %}
+            {% endif %}
+            {% for _ in range(2 - (active_bookings|length if active_bookings else 0)) %}
+                <li class="booking-item free-slot-msg">Свободный слот</li>
+            {% endfor %}
+            </ul>
         </div>
     </div>
-    мде
+    <div class="profile-divider"></div>
+    <div class="profile-half right">
+        <h2>История бронирований</h2>
+        <div class="history-scroll">
+            {% if history_bookings %}
+                <ul class="booking-list">
+                {% for b in history_bookings %}
+                    <li class="booking-item">
+                        <div>
+                            <b>Площадка:</b> {{ b[1] }}<br>
+                            <b>Дата:</b> {{ b[2] }}<br>
+                            <b>Время:</b> {{ b[3] }} - {{ b[4] }}
+                        </div>
+                    </li>
+                {% endfor %}
+                </ul>
+            {% else %}
+                <p>Нет истории бронирований.</p>
+            {% endif %}
+        </div>
+    </div>
 </div>
 {% endblock %} 

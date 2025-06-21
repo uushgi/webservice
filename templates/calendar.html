@@ -1,7 +1,7 @@
 <div class="calendar-wrapper">
     <div class="venue-tabs">
         {% for venue in venues %}
-        <button class="venue-tab">{{ venue.name }}</button>
+        <button class="venue-tab" data-venue-id="{{ venue.id }}">{{ venue.name }}</button>
         {% endfor %}
     </div>
     <div class="calendar">

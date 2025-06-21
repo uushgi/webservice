@@ -9,9 +9,15 @@
 </head>
 <body>
     {% include 'header.html' %}
-
-    {% block content %}{% endblock %}
-
+    <div class="page-wrapper">
+        {% block content %}{% endblock %}
+    </div>
     {% include 'footer.html' %}
+
+    <div id="img-modal" class="img-modal">
+        <span class="img-modal-close">&times;</span>
+        <img class="img-modal-content" id="img-modal-full">
+    </div>
+    <script src="{{ url_for('static', filename='js/venue_lightbox.js') }}"></script>
 </body>
 </html> 
